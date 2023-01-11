@@ -460,7 +460,12 @@ cdef _ndarray_base scan(
         dtype = out.dtype
     dtype = numpy.dtype(dtype)
 
-    warp_size = 64 if runtime._is_hip_environment else 32
+    props = cupy.cuda.runtime.getDeviceProperties(0)
+    if runtime._is_hip_environment:
+        warp_size = props['warpSize']
+    else:
+        warp_size = 32
+
     if runtime._is_hip_environment:
         if dtype.char in 'iIfdlq':
             # On HIP, __shfl* supports int, unsigned int, float, double,
